@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Crypto Trading Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TradingView Style Crypto Dashboard</h1>
+            <p>GitHub Pages ile hızlı ve güvenilir hosting</p>
+        </div>
+
+        <div id="chartContainer" class="chart-container">
+            <div class="chart-title" id="chartTitle">Grafik Yükleniyor...</div>
+            <div id="chartUpper" style="width:100%; height:400px;"></div>
+            <div id="chartLower" style="width:100%; height:400px;"></div>
+        </div>
+
+        <div class="controls">
+            <span class="time-label">⏰ Periyot:</span>
+            <select id="timeframe">
+                <option value="1m">1 dakika</option>
+                <option value="5m">5 dakika</option>
+                <option value="15m">15 dakika</option>
+                <option value="30m">30 dakika</option>
+                <option value="1h" selected>1 saat</option>
+                <option value="4h">4 saat</option>
+                <option value="1d">1 gün</option>
+            </select>
+            <span class="time-label">📅 Süre:</span>
+            <select id="timeRange">
+                <option value="1">1 Gün</option>
+                <option value="3" selected>3 Gün</option>
+                <option value="7">7 Gün</option>
+            </select>
+            <label class="toggle-switch">
+                <input type="checkbox" id="tw-mode" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="switch-label">TW Modu</span>
+            <button id="refreshData">🔄 Verileri Yenile</button>
+            <button id="autoRefresh">⚡ Otomatik</button>
+        </div>
+
+        <table id="cryptoTable" class="crypto-table">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sort="symbol">Sembol</th>
+                    <th>Piyasa</th>
+                    <th class="sortable" data-sort="price">Fiyat</th>
+                    <th class="sortable" data-sort="positivePct">Pozitif %</th>
+                    <th class="sortable" data-sort="negativePct">Negatif %</th>
+                    <th class="sortable" data-sort="buyPct">Alım %</th>
+                    <th class="sortable" data-sort="sellPct">Satım %</th>
+                    <th>Son Güncelleme</th>
+                    <th class="sortable" data-sort="lastStrongSignal">Güçlü Sinyal</th>
+                    <th class="sortable" data-sort="lastSignalStrength">Puan</th>
+                    <th class="sortable" data-sort="lastSignalBarsAgo">Kaç Mum Önce</th>
+                </tr>
+            </thead>
+            <tbody id="cryptoTableBody">
+                <tr>
+                    <td colspan="11" id="loadingMessage">
+                        <div class="loading">
+                            <span class="loader"></span>
+                            📊 GitHub Pages başlatılıyor...
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="status">
+            <p><span class="loader" id="statusLoader"></span> 
+               📊 Durum: <span id="status">GitHub Pages yükleniyor...</span></p>
+            <p>⏰ Son Güncelleme: <span id="lastUpdate">-</span></p>
+            <p>🌐 Hosting: <strong>GitHub Pages</strong> 🟢</p>
+            <p>🔗 API: <strong>Binance API</strong> ⚡</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
