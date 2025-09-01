@@ -1,0 +1,306 @@
+/* GitHub Pages Crypto Dashboard CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+    color: #f0f6fc;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    background: rgba(33, 39, 46, 0.8);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #30363d;
+    backdrop-filter: blur(10px);
+}
+
+.header h1 {
+    font-size: 32px;
+    background: linear-gradient(135deg, #58a6ff 0%, #a5f3fc 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #8b949e;
+    font-size: 16px;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    background: rgba(33, 39, 46, 0.8);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    flex-wrap: wrap;
+}
+
+.time-label {
+    color: #f0f6fc;
+    font-weight: 500;
+}
+
+select, button {
+    padding: 12px 18px;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    background: #21262d;
+    color: #f0f6fc;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+select:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+button {
+    background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(46, 160, 67, 0.3);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 160, 67, 0.4);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    transition: .4s;
+    border-radius: 30px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #58a6ff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(30px);
+}
+
+.switch-label {
+    margin-left: 10px;
+    color: #f0f6fc;
+    font-weight: 500;
+}
+
+.chart-container {
+    background: rgba(33, 39, 46, 0.9);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px;
+    display: none;
+    border: 1px solid #30363d;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.chart-title {
+    color: #f0f6fc;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.crypto-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(33, 39, 46, 0.9);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.crypto-table th, .crypto-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #30363d;
+}
+
+.crypto-table th {
+    background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
+    color: #f0f6fc;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.crypto-table th:hover {
+    background: linear-gradient(135deg, #30363d 0%, #21262d 100%);
+}
+
+.crypto-table tr:hover {
+    background: rgba(88, 166, 255, 0.08);
+    cursor: pointer;
+}
+
+.crypto-table th.sortable:after {
+    content: "⮃";
+    position: absolute;
+    right: 8px;
+    color: #777;
+}
+
+.crypto-table th.sortable.asc:after {
+    content: "▲";
+    color: #58a6ff;
+}
+
+.crypto-table th.sortable.desc:after {
+    content: "▼";
+    color: #58a6ff;
+}
+
+.futures-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #58a6ff;
+    margin-right: 8px;
+}
+
+.percentage-cell {
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 70px;
+    display: inline-block;
+}
+
+.percentage-cell.positive {
+    color: #58a6ff;
+    background: rgba(88, 166, 255, 0.15);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+}
+
+.percentage-cell.negative {
+    color: #bc8cff;
+    background: rgba(188, 140, 255, 0.15);
+    border: 1px solid rgba(188, 140, 255, 0.3);
+}
+
+.percentage-cell.buy {
+    color: #3fb950;
+    background: rgba(63, 185, 80, 0.15);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+}
+
+.percentage-cell.sell {
+    color: #f85149;
+    background: rgba(248, 81, 73, 0.15);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+}
+
+.signal-cell {
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.signal-cell.sell {
+    color: #f85149;
+}
+
+.status {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(33, 39, 46, 0.8);
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    text-align: center;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+}
+
+.loader {
+    border: 3px solid #30363d;
+    border-radius: 50%;
+    border-top: 3px solid #58a6ff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container { padding: 10px; }
+    .controls { flex-direction: column; gap: 10px; }
+    .crypto-table th, .crypto-table td { padding: 8px; font-size: 12px; }
+    .header h1 { font-size: 24px; }
+}
