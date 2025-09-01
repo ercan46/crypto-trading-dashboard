@@ -3,25 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Crypto Trading Dashboard</title>
+    <title>TradingView Style Change %VP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #15171a;
+        color: #e0e0e0;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .header h1 {
+        margin: 0;
+        color: #e0e0e0;
+        font-size: 24px;
+        text-align: center;
+    }
+    .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 10px 0;
+        justify-content: center;
+    }
+    select, button {
+        padding: 8px 12px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: #2a2e33;
+        color: #e0e0e0;
+    }
+    button {
+        background-color: #2962ff;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0039cb;
+    }
+    .chart-container {
+        background-color: #1d2126;
+        border-radius: 5px;
+        padding: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .chart-title {
+        color: #e0e0e0;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+    .status {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #2a2e33;
+        border-radius: 4px;
+        color: #e0e0e0;
+        text-align: center;
+    }
+    .loader {
+        border: 4px solid #2a2e33;
+        border-radius: 50%;
+        border-top: 4px solid #2962ff;
+        width: 20px;
+        height: 20px;
+        animation: spin 2s linear infinite;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #333;
+        transition: .4s;
+        border-radius: 30px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #2962ff;
+    }
+    input:checked + .slider:before {
+        transform: translateX(30px);
+    }
+    .switch-label {
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+    .time-label {
+        margin-right: 5px;
+    }
+    .crypto-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #1d2126;
+        border-radius: 5px;
+    }
+    .crypto-table th, .crypto-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+    .crypto-table th {
+        background-color: #2a2e33;
+        color: #e0e0e0;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .crypto-table tr:hover {
+        background-color: #2a2e33;
+        cursor: pointer;
+    }
+    .crypto-table th.sortable:after {
+        content: "⮃";
+        position: absolute;
+        right: 8px;
+        color: #777;
+    }
+    .crypto-table th.sortable.asc:after {
+        content: "▲";
+        color: #2962ff;
+    }
+    .crypto-table th.sortable.desc:after {
+        content: "▼";
+        color: #2962ff;
+    }
+    .futures-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #2962ff;
+        margin-right: 8px;
+    }
+    .error-message {
+        color: #ef5350;
+        font-weight: bold;
+        margin-top: 10px;
+        display: none;
+    }
+    .percentage-cell {
+        font-weight: bold;
+        text-align: center;
+        padding: 5px 8px;
+        border-radius: 3px;
+    }
+    .percentage-cell.positive {
+        color: #2962ff;
+        background-color: rgba(41, 98, 255, 0.1);
+    }
+    .percentage-cell.negative {
+        color: #9c27b0;
+        background-color: rgba(156, 39, 176, 0.1);
+    }
+    .percentage-cell.buy {
+        color: #26a69a;
+        background-color: rgba(38, 166, 154, 0.1);
+    }
+    .percentage-cell.sell {
+        color: #ef5350;
+        background-color: rgba(239, 83, 80, 0.1);
+    }
+    .signal-cell {
+        text-align: center;
+        color: #00e676;
+    }
+    .signal-cell.sell {
+        color: #ff1744;
+    }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 TradingView Style Crypto Dashboard</h1>
-            <p>GitHub Pages ile hızlı ve güvenilir hosting</p>
+            <h1>TradingView Style Change %VP</h1>
         </div>
 
         <div id="chartContainer" class="chart-container">
-            <div class="chart-title" id="chartTitle">Grafik Yükleniyor...</div>
+            <div class="chart-title" id="chartTitle">Grafik</div>
             <div id="chartUpper" style="width:100%; height:400px;"></div>
             <div id="chartLower" style="width:100%; height:400px;"></div>
         </div>
 
         <div class="controls">
-            <span class="time-label">⏰ Periyot:</span>
+            <span class="time-label">Periyot:</span>
             <select id="timeframe">
                 <option value="1m">1 dakika</option>
                 <option value="5m">5 dakika</option>
@@ -31,7 +235,7 @@
                 <option value="4h">4 saat</option>
                 <option value="1d">1 gün</option>
             </select>
-            <span class="time-label">📅 Süre:</span>
+            <span class="time-label">Süre:</span>
             <select id="timeRange">
                 <option value="1">1 Gün</option>
                 <option value="3" selected>3 Gün</option>
@@ -42,8 +246,7 @@
                 <span class="slider"></span>
             </label>
             <span class="switch-label">TW Modu</span>
-            <button id="refreshData">🔄 Verileri Yenile</button>
-            <button id="autoRefresh">⚡ Otomatik</button>
+            <button id="refreshData">Verileri Yenile</button>
         </div>
 
         <table id="cryptoTable" class="crypto-table">
@@ -64,25 +267,671 @@
             </thead>
             <tbody id="cryptoTableBody">
                 <tr>
-                    <td colspan="11" id="loadingMessage">
-                        <div class="loading">
-                            <span class="loader"></span>
-                            📊 GitHub Pages başlatılıyor...
-                        </div>
-                    </td>
+                    <td colspan="11" id="loadingMessage">Semboller yükleniyor...</td>
                 </tr>
             </tbody>
         </table>
 
         <div class="status">
-            <p><span class="loader" id="statusLoader"></span> 
-               📊 Durum: <span id="status">GitHub Pages yükleniyor...</span></p>
-            <p>⏰ Son Güncelleme: <span id="lastUpdate">-</span></p>
-            <p>🌐 Hosting: <strong>GitHub Pages</strong> 🟢</p>
-            <p>🔗 API: <strong>Binance API</strong> ⚡</p>
+            <p><span class="loader"></span> Durum: <span id="status">Başlatılıyor...</span></p>
+            <p>Son Güncelleme: <span id="lastUpdate">-</span></p>
+            <div id="errorMessage" class="error-message"></div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        const binanceFuturesApiUrl = 'https://fapi.binance.com/fapi/v1/klines';
+        const binanceFuturesExchangeInfoUrl = 'https://fapi.binance.com/fapi/v1/exchangeInfo';
+        let currentTimeframe = document.getElementById('timeframe').value;
+        let currentTimeRange = parseInt(document.getElementById('timeRange').value);
+        let isUpdating = false;
+        let updateTimer = null;
+        let twMode = document.getElementById('tw-mode').checked;
+        let cryptoData = [];
+        let currentChartSymbol = '';
+
+        const statusElement = document.getElementById('status');
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        const cryptoTableBody = document.getElementById('cryptoTableBody');
+        const chartContainer = document.getElementById('chartContainer');
+        const chartTitle = document.getElementById('chartTitle');
+        let currentSort = { column: 'buyPct', direction: 'desc' };
+
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Sayfa yüklendi, başlatılıyor...');
+            initializeData();
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.getAttribute('data-sort');
+                    if (currentSort.column === column) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort.column = column;
+                        currentSort.direction = 'desc';
+                    }
+                    updateSortIndicators();
+                    renderTable();
+                });
+            });
+            document.getElementById('refreshData').addEventListener('click', fetchData);
+            document.getElementById('timeframe').addEventListener('change', () => {
+                currentTimeframe = document.getElementById('timeframe').value;
+                fetchData();
+            });
+            document.getElementById('timeRange').addEventListener('change', () => {
+                currentTimeRange = parseInt(document.getElementById('timeRange').value);
+                fetchData();
+            });
+            document.getElementById('tw-mode').addEventListener('change', () => {
+                twMode = document.getElementById('tw-mode').checked;
+                fetchData();
+            });
+        });
+
+        async function initializeData() {
+            updateStatus('Semboller yükleniyor...');
+            try {
+                const symbols = await fetchAllFuturesSymbols();
+                cryptoData = symbols.map(symbol => ({
+                    ...symbol,
+                    lastPrice: 0,
+                    positivePct: null,
+                    negativePct: null,
+                    buyPct: null,
+                    sellPct: null,
+                    lastUpdate: null,
+                    lastStrongSignal: null,
+                    lastSignalStrength: null,
+                    lastSignalBarsAgo: null
+                }));
+                updateStatus(`${cryptoData.length} sembol yüklendi. Veriler çekiliyor...`);
+                await fetchData();
+            } catch (error) {
+                console.error('initializeData hatası:', error);
+                updateStatus('Hata oluştu');
+                showError(`Hata: ${error.message}`);
+            }
+        }
+
+        async function fetchAllFuturesSymbols() {
+            try {
+                const response = await fetch(binanceFuturesExchangeInfoUrl);
+                if (!response.ok) throw new Error(`API Hatası: ${response.status}`);
+                const data = await response.json();
+                console.log('Sembol sayısı:', data.symbols.length);
+                return data.symbols
+                    .filter(s => s.symbol.endsWith('USDT') && s.status === 'TRADING')
+                    .map(s => ({
+                        symbol: s.symbol,
+                        baseAsset: s.baseAsset,
+                        quoteAsset: s.quoteAsset,
+                        market: 'Futures'
+                    }));
+            } catch (error) {
+                console.error('fetchAllFuturesSymbols hatası:', error);
+                throw error;
+            }
+        }
+
+        function updateSortIndicators() {
+            document.querySelectorAll('th.sortable').forEach(th => {
+                const column = th.getAttribute('data-sort');
+                th.classList.remove('asc', 'desc');
+                if (column === currentSort.column) {
+                    th.classList.add(currentSort.direction);
+                }
+            });
+        }
+
+        function renderTable() {
+            cryptoTableBody.innerHTML = '';
+            if (cryptoData.length === 0) {
+                cryptoTableBody.innerHTML = '<tr><td colspan="11" style="text-align: center;">Veri bulunamadı</td></tr>';
+                return;
+            }
+            cryptoData.sort((a, b) => {
+                let valueA = a[currentSort.column];
+                let valueB = b[currentSort.column];
+                if (valueA === undefined || valueA === null) return 1;
+                if (valueB === undefined || valueB === null) return -1;
+                if (typeof valueA === 'string') valueA = valueA.toUpperCase();
+                if (typeof valueB === 'string') valueB = valueB.toUpperCase();
+                return currentSort.direction === 'asc' ? (valueA < valueB ? -1 : 1) : (valueA > valueB ? -1 : 1);
+            });
+            cryptoData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.symbol}</td>
+                    <td><span class="futures-indicator"></span>${item.market}</td>
+                    <td>${item.lastPrice !== undefined ? formatPrice(item.lastPrice) : '-'}</td>
+                    <td class="percentage-cell ${item.positivePct !== undefined ? 'positive' : ''}">
+                        ${item.positivePct !== undefined ? item.positivePct.toFixed(1) + '%' : '-'}
+                    </td>
+                    <td class="percentage-cell ${item.negativePct !== undefined ? 'negative' : ''}">
+                        ${item.negativePct !== undefined ? item.negativePct.toFixed(1) + '%' : '-'}
+                    </td>
+                    <td class="percentage-cell ${item.buyPct !== undefined ? 'buy' : ''}">
+                        ${item.buyPct !== undefined ? item.buyPct.toFixed(1) + '%' : '-'}
+                    </td>
+                    <td class="percentage-cell ${item.sellPct !== undefined ? 'sell' : ''}">
+                        ${item.sellPct !== undefined ? item.sellPct.toFixed(1) + '%' : '-'}
+                    </td>
+                    <td>${item.lastUpdate || '-'}</td>
+                    <td class="signal-cell ${item.lastStrongSignal === 'Güçlü Satım' ? 'sell' : ''}">
+                        ${item.lastStrongSignal || '-'}
+                    </td>
+                    <td class="signal-cell">
+                        ${item.lastSignalStrength !== null ? item.lastSignalStrength.toFixed(1) : '-'}
+                    </td>
+                    <td class="signal-cell">
+                        ${item.lastSignalBarsAgo !== null ? item.lastSignalBarsAgo : '-'}
+                    </td>
+                `;
+                row.addEventListener('click', () => {
+                    showCryptoChart(item.symbol);
+                    currentChartSymbol = item.symbol;
+                });
+                cryptoTableBody.appendChild(row);
+            });
+        }
+
+        async function fetchData() {
+            if (isUpdating) return;
+            isUpdating = true;
+            updateStatus('Veriler güncelleniyor...');
+            try {
+                const promises = cryptoData.map(async crypto => {
+                    const result = await fetchCryptoData(crypto.symbol);
+                    if (result) {
+                        crypto.lastPrice = result.lastPrice;
+                        crypto.positivePct = result.positivePct;
+                        crypto.negativePct = result.negativePct;
+                        crypto.buyPct = result.buyPct;
+                        crypto.sellPct = result.sellPct;
+                        crypto.lastUpdate = result.lastUpdate;
+                        crypto.lastStrongSignal = result.lastStrongSignal;
+                        crypto.lastSignalStrength = result.lastSignalStrength;
+                        crypto.lastSignalBarsAgo = result.lastSignalBarsAgo;
+                    }
+                    return crypto;
+                });
+                await Promise.all(promises);
+                renderTable();
+                if (currentChartSymbol) showCryptoChart(currentChartSymbol);
+                updateStatus('Veriler güncellendi');
+                lastUpdateElement.textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('fetchData hatası:', error);
+                updateStatus('Hata oluştu');
+                showError(`Hata: ${error.message}`);
+            } finally {
+                isUpdating = false;
+                clearTimeout(updateTimer);
+                updateTimer = setTimeout(fetchData, 30000);
+            }
+        }
+
+        async function fetchCryptoData(symbol) {
+            try {
+                const candleLimit = getRequiredCandles();
+                console.log(`Veri çekiliyor: ${symbol}, timeframe: ${currentTimeframe}, limit: ${candleLimit}`);
+                const response = await fetch(`${binanceFuturesApiUrl}?symbol=${symbol}&interval=${currentTimeframe}&limit=${candleLimit}`);
+                if (!response.ok) throw new Error(`API Hatası: ${response.status}`);
+                const data = await response.json();
+                console.log(`${symbol} veri uzunluğu:`, data.length);
+                if (!data || data.length === 0) {
+                    console.warn(`${symbol}: Boş veri`);
+                    return null;
+                }
+                const timestamps = [];
+                const opens = [];
+                const highs = [];
+                const lows = [];
+                const closes = [];
+                const volumes = [];
+                data.forEach(candle => {
+                    timestamps.push(new Date(candle[0]));
+                    opens.push(parseFloat(candle[1]));
+                    highs.push(parseFloat(candle[2]));
+                    lows.push(parseFloat(candle[3]));
+                    closes.push(parseFloat(candle[4]));
+                    volumes.push(parseFloat(candle[5]));
+                });
+                const lastPrice = closes[closes.length - 1];
+                const lastUpdate = timestamps[timestamps.length - 1];
+                const fullResults = calculateChangeVPFull(opens, highs, lows, closes, volumes);
+                const signals = detectSignals(timestamps, highs, lows, fullResults.buyPct, fullResults.sellPct);
+                let lastStrongSignal = null;
+                let lastSignalStrength = null;
+                let lastSignalBarsAgo = null;
+                const allStrongSignals = [
+                    ...signals.strongBuySignals.map(s => ({ ...s, type: 'Güçlü Alım' })),
+                    ...signals.strongSellSignals.map(s => ({ ...s, type: 'Güçlü Satım' }))
+                ].sort((a, b) => b.time - a.time);
+                if (allStrongSignals.length > 0) {
+                    const latestSignal = allStrongSignals[0];
+                    lastStrongSignal = latestSignal.type;
+                    lastSignalStrength = latestSignal.guc;
+                    const signalIndex = timestamps.indexOf(latestSignal.time);
+                    lastSignalBarsAgo = timestamps.length - 1 - signalIndex;
+                }
+                return {
+                    lastPrice,
+                    positivePct: fullResults.positivePct[fullResults.positivePct.length - 1],
+                    negativePct: fullResults.negativePct[fullResults.negativePct.length - 1],
+                    buyPct: fullResults.buyPct[fullResults.buyPct.length - 1],
+                    sellPct: fullResults.sellPct[fullResults.sellPct.length - 1],
+                    lastUpdate: lastUpdate.toLocaleTimeString(),
+                    lastStrongSignal,
+                    lastSignalStrength,
+                    lastSignalBarsAgo
+                };
+            } catch (error) {
+                console.error(`${symbol} veri hatası:`, error);
+                return null;
+            }
+        }
+
+        function calculateChangeVPFull(opens, highs, lows, closes, volumes) {
+            let cumulativePositive = 0;
+            let cumulativeNegative = 0;
+            let cumulativeBuy = 0;
+            let cumulativeSell = 0;
+            let avgVolume = volumes.length > 0 ? volumes.reduce((sum, v) => sum + v, 0) / volumes.length : 0;
+            const positivePct = new Array(closes.length).fill(50);
+            const negativePct = new Array(closes.length).fill(50);
+            const buyPct = new Array(closes.length).fill(50);
+            const sellPct = new Array(closes.length).fill(50);
+            for (let i = 1; i < closes.length; i++) {
+                const priceChange = closes[i] - closes[i-1];
+                if (priceChange > 0) cumulativePositive += priceChange;
+                else if (priceChange < 0) cumulativeNegative += Math.abs(priceChange);
+                const priceRange = Math.max(0.0001, highs[i] - lows[i]);
+                const buyVolume = (closes[i] - lows[i]) / priceRange * volumes[i];
+                const sellVolume = (highs[i] - closes[i]) / priceRange * volumes[i];
+                cumulativeBuy += buyVolume;
+                cumulativeSell += sellVolume;
+                const totalMove = Math.max(0.0001, cumulativePositive + cumulativeNegative);
+                const totalVolume = Math.max(0.0001, cumulativeBuy + cumulativeSell);
+                positivePct[i] = (cumulativePositive / totalMove) * 100;
+                negativePct[i] = (cumulativeNegative / totalMove) * 100;
+                buyPct[i] = (cumulativeBuy / totalVolume) * 100;
+                sellPct[i] = (cumulativeSell / totalVolume) * 100;
+            }
+            if (twMode) {
+                const significantEvents = [];
+                for (let i = 5; i < closes.length; i++) {
+                    const recentPriceChange = Math.abs(closes[i] - closes[i-5]) / closes[i-5];
+                    const volumeRatio = volumes[i] / avgVolume;
+                    if ((recentPriceChange > 0.4 && volumeRatio > 1.5) || volumeRatio > 1.8) {
+                        const direction = closes[i] > closes[i-5] ? 'buy' : 'sell';
+                        const magnitude = Math.min(3.0, 1.0 + recentPriceChange * 2);
+                        significantEvents.push({ index: i, direction, magnitude });
+                    }
+                }
+                significantEvents.forEach(event => {
+                    const influenceRange = Math.min(20, Math.max(10, Math.floor(event.magnitude * 10)));
+                    for (let j = Math.max(0, event.index - influenceRange); j <= Math.min(closes.length - 1, event.index + influenceRange); j++) {
+                        const distance = Math.abs(j - event.index) / influenceRange;
+                        const effect = (1 - distance) * event.magnitude;
+                        if (event.direction === 'buy') {
+                            buyPct[j] += effect * 10;
+                            positivePct[j] += effect * 10;
+                            sellPct[j] = Math.max(0, sellPct[j] - effect * 5);
+                            negativePct[j] = Math.max(0, negativePct[j] - effect * 5);
+                        } else {
+                            sellPct[j] += effect * 10;
+                            negativePct[j] += effect * 10;
+                            buyPct[j] = Math.max(0, buyPct[j] - effect * 5);
+                            positivePct[j] = Math.max(0, positivePct[j] - effect * 5);
+                        }
+                    }
+                });
+                for (let i = 0; i < positivePct.length; i++) {
+                    positivePct[i] = Math.min(100, Math.max(0, positivePct[i]));
+                    negativePct[i] = Math.min(100, Math.max(0, negativePct[i]));
+                    buyPct[i] = Math.min(100, Math.max(0, buyPct[i]));
+                    sellPct[i] = Math.min(100, Math.max(0, sellPct[i]));
+                }
+            }
+            console.log('calculateChangeVPFull sonuçları:', {
+                positivePctLength: positivePct.length,
+                negativePctLength: negativePct.length,
+                buyPctLength: buyPct.length,
+                sellPctLength: sellPct.length
+            });
+            return { positivePct, negativePct, buyPct, sellPct };
+        }
+
+        function detectSignals(timestamps, highs, lows, buyPct, sellPct) {
+            const buySignals = [];
+            const sellSignals = [];
+            const strongBuySignals = [];
+            const strongSellSignals = [];
+            const threshold = 10;
+
+            if (!buyPct || !sellPct || buyPct.length !== timestamps.length) {
+                console.warn('detectSignals: Geçersiz veri uzunlukları', {
+                    timestamps: timestamps.length,
+                    buyPct: buyPct?.length,
+                    sellPct: sellPct?.length
+                });
+                return { buySignals, sellSignals, strongBuySignals, strongSellSignals };
+            }
+
+            // Mevcut sinyaller (%55 üzeri, 5 mum farkı)
+            for (let i = 10; i < timestamps.length; i++) {
+                const buyDiff = buyPct[i] - buyPct[i-5];
+                const sellDiff = sellPct[i] - sellPct[i-5];
+                let isRecentBuySignal = false;
+                let isRecentSellSignal = false;
+                for (let j = Math.max(0, i - 20); j < i; j++) {
+                    if (buyPct[j] - buyPct[j-5] > threshold / 1.5) {
+                        isRecentBuySignal = true;
+                        break;
+                    }
+                    if (sellPct[j] - sellPct[j-5] > threshold / 1.5) {
+                        isRecentSellSignal = true;
+                        break;
+                    }
+                }
+                if (buyDiff > threshold && buyPct[i] > 55 && !isRecentBuySignal) {
+                    buySignals.push({ time: timestamps[i], value: lows[i] * 0.998 });
+                }
+                if (sellDiff > threshold && sellPct[i] > 55 && !isRecentSellSignal) {
+                    sellSignals.push({ time: timestamps[i], value: highs[i] * 1.002 });
+                }
+            }
+
+            // %70 güçlü sinyaller
+            for (let i = 1; i < timestamps.length; i++) {
+                if (buyPct[i] > 70 && buyPct[i-1] <= 70 && buyPct[i] > sellPct[i]) {
+                    const guc = (buyPct[i] - 70) / 30 * 10; // 0-10 arası ölçek
+                    strongBuySignals.push({
+                        time: timestamps[i],
+                        value: lows[i] * 0.996,
+                        guc: guc
+                    });
+                } else if (sellPct[i] > 70 && sellPct[i-1] <= 70 && sellPct[i] > buyPct[i]) {
+                    const guc = (sellPct[i] - 70) / 30 * 10; // 0-10 arası ölçek
+                    strongSellSignals.push({
+                        time: timestamps[i],
+                        value: highs[i] * 1.004,
+                        guc: guc
+                    });
+                }
+            }
+
+            console.log('Sinyaller:', {
+                buySignals: buySignals.length,
+                sellSignals: sellSignals.length,
+                strongBuySignals: strongBuySignals.length,
+                strongSellSignals: strongSellSignals.length
+            });
+            return { buySignals, sellSignals, strongBuySignals, strongSellSignals };
+        }
+
+        async function showCryptoChart(symbol) {
+            chartTitle.textContent = `${symbol} - %VP (${currentTimeRange} Gün, ${currentTimeframe})`;
+            chartContainer.style.display = 'block';
+            try {
+                updateStatus(`${symbol} grafik yükleniyor...`);
+                const candleLimit = getRequiredCandles();
+                const response = await fetch(`${binanceFuturesApiUrl}?symbol=${symbol}&interval=${currentTimeframe}&limit=${candleLimit}`);
+                if (!response.ok) throw new Error(`API Hatası: ${response.status}`);
+                const data = await response.json();
+                console.log(`${symbol} grafik verisi:`, data.length);
+                if (!data || data.length === 0) throw new Error('Veri alınamadı');
+                const timestamps = [];
+                const opens = [];
+                const highs = [];
+                const lows = [];
+                const closes = [];
+                const volumes = [];
+                data.forEach(candle => {
+                    timestamps.push(new Date(candle[0]));
+                    opens.push(parseFloat(candle[1]));
+                    highs.push(parseFloat(candle[2]));
+                    lows.push(parseFloat(candle[3]));
+                    closes.push(parseFloat(candle[4]));
+                    volumes.push(parseFloat(candle[5]));
+                });
+                const fullResults = calculateChangeVPFull(opens, highs, lows, closes, volumes);
+                createChart(timestamps, opens, highs, lows, closes, fullResults.positivePct, fullResults.negativePct, fullResults.buyPct, fullResults.sellPct, symbol);
+                updateStatus(`${symbol} grafik yüklendi`);
+            } catch (error) {
+                console.error('showCryptoChart hatası:', error);
+                updateStatus('Grafik yüklenemedi');
+                showError(`Grafik Hatası: ${error.message}`);
+            }
+        }
+
+        function createChart(timestamps, opens, highs, lows, closes, positivePct, negativePct, buyPct, sellPct, symbol) {
+            console.log('createChart başlatılıyor:', {
+                timestamps: timestamps.length,
+                opens: opens.length,
+                positivePct: positivePct.length,
+                buyPct: buyPct.length
+            });
+            if (!timestamps.length || !opens.length || !positivePct.length || !buyPct.length) {
+                console.error('createChart: Eksik veri');
+                showError('Grafik için yeterli veri yok');
+                return;
+            }
+
+            // Eski grafikleri temizle
+            Plotly.purge('chartUpper');
+            Plotly.purge('chartLower');
+            console.log('Eski grafikler temizlendi');
+
+            const signals = detectSignals(timestamps, highs, lows, buyPct, sellPct);
+
+            // Üst grafik: Mumlar ve sinyaller
+            const candlestickTrace = {
+                x: timestamps,
+                open: opens,
+                high: highs,
+                low: lows,
+                close: closes,
+                type: 'candlestick',
+                name: 'Fiyat',
+                increasing: { line: { color: '#26a69a' } },
+                decreasing: { line: { color: '#ef5350' } }
+            };
+            const buySignalTrace = {
+                x: signals.buySignals.map(s => s.time),
+                y: signals.buySignals.map(s => s.value),
+                mode: 'markers',
+                name: 'Alım Sinyali',
+                marker: {
+                    symbol: 'triangle-up',
+                    size: 16,
+                    color: '#26a69a'
+                }
+            };
+            const sellSignalTrace = {
+                x: signals.sellSignals.map(s => s.time),
+                y: signals.sellSignals.map(s => s.value),
+                mode: 'markers',
+                name: 'Satım Sinyali',
+                marker: {
+                    symbol: 'triangle-down',
+                    size: 16,
+                    color: '#ef5350'
+                }
+            };
+            const strongBuySignalTrace = {
+                x: signals.strongBuySignals.map(s => s.time),
+                y: signals.strongBuySignals.map(s => s.value),
+                mode: 'markers',
+                name: 'Güçlü Alım',
+                marker: {
+                    symbol: 'circle',
+                    size: signals.strongBuySignals.map(s => 12 + s.guc * 2),
+                    color: '#00e676'
+                }
+            };
+            const strongSellSignalTrace = {
+                x: signals.strongSellSignals.map(s => s.time),
+                y: signals.strongSellSignals.map(s => s.value),
+                mode: 'markers',
+                name: 'Güçlü Satım',
+                marker: {
+                    symbol: 'circle',
+                    size: signals.strongSellSignals.map(s => 12 + s.guc * 2),
+                    color: '#ff1744'
+                }
+            };
+
+            const upperData = [
+                candlestickTrace,
+                buySignalTrace,
+                sellSignalTrace,
+                strongBuySignalTrace,
+                strongSellSignalTrace
+            ].filter(trace => trace.x && trace.x.length > 0);
+
+            const upperLayout = {
+                xaxis: {
+                    title: 'Zaman',
+                    type: 'date',
+                    gridcolor: '#333'
+                },
+                yaxis: {
+                    title: 'Fiyat',
+                    side: 'left',
+                    gridcolor: '#333'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1.1, orientation: 'h' },
+                margin: { t: 50, b: 50 },
+                plot_bgcolor: '#1d2126',
+                paper_bgcolor: '#1d2126',
+                font: { color: '#e0e0e0' }
+            };
+
+            // Alt grafik: Sadece %VP çizgileri
+            const positiveTrace = {
+                x: timestamps,
+                y: positivePct,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Pozitif %',
+                line: { color: '#2962ff', width: 2 }
+            };
+            const negativeTrace = {
+                x: timestamps,
+                y: negativePct,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Negatif %',
+                line: { color: '#9c27b0', width: 2 }
+            };
+            const buyTrace = {
+                x: timestamps,
+                y: buyPct,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Alım %',
+                line: { color: '#26a69a', width: 2 }
+            };
+            const sellTrace = {
+                x: timestamps,
+                y: sellPct,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Satım %',
+                line: { color: '#ef5350', width: 2 }
+            };
+
+            const lowerData = [
+                positiveTrace,
+                negativeTrace,
+                buyTrace,
+                sellTrace
+            ].filter(trace => trace.x && trace.x.length > 0);
+
+            const lowerLayout = {
+                xaxis: {
+                    title: 'Zaman',
+                    type: 'date',
+                    gridcolor: '#333'
+                },
+                yaxis: {
+                    title: '% Değer',
+                    side: 'right',
+                    range: [0, 100],
+                    gridcolor: '#333'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1.1, orientation: 'h' },
+                margin: { t: 50, b: 50 },
+                plot_bgcolor: '#1d2126',
+                paper_bgcolor: '#1d2126',
+                font: { color: '#e0e0e0' }
+            };
+
+            // Üst ve alt grafikleri ayrı ayrı çiz
+            console.log('Üst grafik çiziliyor:', upperData.length, 'trace');
+            upperData.forEach((trace, index) => {
+                console.log(`Upper Trace ${index}: ${trace.name}`);
+            });
+            Plotly.newPlot('chartUpper', upperData, upperLayout).then(() => {
+                console.log('Üst grafik başarıyla çizildi');
+            }).catch(err => {
+                console.error('Üst grafik çizim hatası:', err);
+                showError('Üst grafik çizilirken hata oluştu');
+            });
+
+            console.log('Alt grafik çiziliyor:', lowerData.length, 'trace');
+            lowerData.forEach((trace, index) => {
+                console.log(`Lower Trace ${index}: ${trace.name}`);
+            });
+            Plotly.newPlot('chartLower', lowerData, lowerLayout).then(() => {
+                console.log('Alt grafik başarıyla çizildi');
+            }).catch(err => {
+                console.error('Alt grafik çizim hatası:', err);
+                showError('Alt grafik çizilirken hata oluştu');
+            });
+        }
+
+        function getRequiredCandles() {
+            const days = currentTimeRange;
+            let candlesPerDay = 0;
+            switch(currentTimeframe) {
+                case '1m': candlesPerDay = 1440; break;
+                case '5m': candlesPerDay = 288; break;
+                case '15m': candlesPerDay = 96; break;
+                case '30m': candlesPerDay = 48; break;
+                case '1h': candlesPerDay = 24; break;
+                case '4h': candlesPerDay = 6; break;
+                case '1d': candlesPerDay = 1; break;
+                default: candlesPerDay = 24; break;
+            }
+            return Math.min(1000, candlesPerDay * days);
+        }
+
+        function formatPrice(price) {
+            if (price === undefined || price === null) return '-';
+            if (price < 0.0001) return price.toFixed(8);
+            if (price < 0.01) return price.toFixed(6);
+            if (price < 1) return price.toFixed(4);
+            if (price < 100) return price.toFixed(2);
+            if (price < 10000) return price.toFixed(1);
+            return price.toFixed(0);
+        }
+
+        function updateStatus(message) {
+            statusElement.textContent = message;
+        }
+
+        function showError(message) {
+            const errorMessageElement = document.getElementById('errorMessage');
+            errorMessageElement.textContent = message;
+            errorMessageElement.style.display = 'block';
+            setTimeout(() => { errorMessageElement.style.display = 'none'; }, 5000);
+        }
+    </script>
 </body>
 </html>
+
