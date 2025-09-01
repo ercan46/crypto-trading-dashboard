@@ -1,4 +1,4 @@
-// GitHub Pages Crypto Dashboard - Tam JavaScript Kodu
+// GitHub Pages Crypto Dashboard - Optimize Edilmiş Kod
 console.log('🚀 GitHub Pages Crypto Dashboard başlatılıyor...');
 
 // API URLs
@@ -23,15 +23,14 @@ const lastUpdateElement = document.getElementById('lastUpdate');
 const cryptoTableBody = document.getElementById('cryptoTableBody');
 const chartContainer = document.getElementById('chartContainer');
 const chartTitle = document.getElementById('chartTitle');
-const statusLoader = document.getElementById('statusLoader');
 
 // Sayfa yüklendiğinde başlat
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM yüklendi, GitHub Pages başlatılıyor...');
-    updateStatus('GitHub Pages yükleniyor...');
+    updateStatus('GitHub Pages başlatılıyor...');
     
     initializeEventListeners();
-    setTimeout(initializeData, 1000);
+    setTimeout(initializeData, 2000); // 2 saniye bekle
 });
 
 function initializeEventListeners() {
@@ -52,50 +51,66 @@ function initializeEventListeners() {
         });
     });
 
-    // Kontrol event listeners
-    document.getElementById('refreshData').addEventListener('click', fetchData);
-    document.getElementById('autoRefresh').addEventListener('click', toggleAutoRefresh);
+    // Kontrol event listeners  
+    document.getElementById('refreshData').addEventListener('click', () => {
+        if (!isUpdating) fetchData();
+    });
+    
+    // Otomatik refresh butonu ekle
+    const refreshBtn = document.getElementById('refreshData');
+    const autoBtn = document.createElement('button');
+    autoBtn.textContent = '⚡ Otomatik';
+    autoBtn.id = 'autoRefresh';
+    autoBtn.addEventListener('click', toggleAutoRefresh);
+    refreshBtn.parentNode.insertBefore(autoBtn, refreshBtn.nextSibling);
     
     document.getElementById('timeframe').addEventListener('change', (e) => {
         currentTimeframe = e.target.value;
-        fetchData();
+        if (!isUpdating) fetchData();
     });
     
     document.getElementById('timeRange').addEventListener('change', (e) => {
         currentTimeRange = parseInt(e.target.value);
-        fetchData();
+        if (!isUpdating) fetchData();
     });
     
     document.getElementById('tw-mode').addEventListener('change', (e) => {
         twMode = e.target.checked;
-        fetchData();
+        if (!isUpdating) fetchData();
     });
     
     console.log('✅ Event listeners kuruldu');
 }
 
 async function initializeData() {
-    updateStatus('GitHub Pages\'den semboller yükleniyor...');
-    showLoader(true);
+    updateStatus('GitHub Pages semboller yükleniyor...');
     
     try {
         console.log('📊 Binance sembollerini çekiyor...');
         const symbols = await fetchAllFuturesSymbols();
         console.log(`✅ ${symbols.length} sembol yüklendi`);
         
-        // İlk 30 popüler sembol al
-        cryptoData = symbols.slice(0, 30).map(symbol => ({
-            ...symbol,
-            lastPrice: 0,
-            positivePct: null,
-            negativePct: null,
-            buyPct: null,
-            sellPct: null,
-            lastUpdate: null,
-            lastStrongSignal: null,
-            lastSignalStrength: null,
-            lastSignalBarsAgo: null
-        }));
+        // Sadece 20 popüler sembol al (performans için)
+        const popularSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 
+                               'SOLUSDT', 'DOTUSDT', 'AVAXUSDT', 'MATICUSDT', 'LINKUSDT',
+                               'LTCUSDT', 'UNIUSDT', 'ATOMUSDT', 'NEARUSDT', 'ALGOUSDT',
+                               'VETUSDT', 'ICPUSDT', 'FILUSDT', 'TRXUSDT', 'ETCUSDT'];
+        
+        cryptoData = symbols
+            .filter(s => popularSymbols.includes(s.symbol))
+            .slice(0, 20)
+            .map(symbol => ({
+                ...symbol,
+                lastPrice: 0,
+                positivePct: null,
+                negativePct: null,
+                buyPct: null,
+                sellPct: null,
+                lastUpdate: null,
+                lastStrongSignal: null,
+                lastSignalStrength: null,
+                lastSignalBarsAgo: null
+            }));
         
         updateStatus(`${cryptoData.length} sembol hazır. GitHub Pages veriler çekiliyor...`);
         await fetchData();
@@ -104,41 +119,57 @@ async function initializeData() {
         console.error('❌ GitHub Pages başlatma hatası:', error);
         updateStatus('GitHub Pages başlatma hatası');
         showError(`Hata: ${error.message}`);
-    } finally {
-        showLoader(false);
     }
 }
 
 async function fetchAllFuturesSymbols() {
     try {
         console.log('📡 Binance API\'den semboller çekiliyor...');
-        const response = await fetch(binanceFuturesExchangeInfoUrl);
         
-        if (!response.ok) {
-            throw new Error(`API Hatası: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return data.symbols
-            .filter(s => s.symbol.endsWith('USDT') && s.status === 'TRADING')
-            .map(s => ({
-                symbol: s.symbol,
-                baseAsset: s.baseAsset,
-                quoteAsset: s.quoteAsset,
-                market: 'Futures'
-            }))
-            .sort((a, b) => {
-                // Popüler coinleri öne çıkar
-                const popular = ['BTC', 'ETH', 'BNB', 'ADA', 'XRP', 'SOL', 'DOT', 'AVAX', 'MATIC', 'LINK', 'LTC', 'UNI', 'ATOM'];
-                const aIndex = popular.indexOf(a.baseAsset);
-                const bIndex = popular.indexOf(b.baseAsset);
+        // Rate limiting için retry mekanizması
+        let retryCount = 0;
+        while (retryCount < 3) {
+            try {
+                const response = await fetch(binanceFuturesExchangeInfoUrl);
                 
-                if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-                if (aIndex !== -1) return -1;
-                if (bIndex !== -1) return 1;
-                return a.symbol.localeCompare(b.symbol);
-            });
+                if (response.status === 429) {
+                    console.warn('Rate limit, 2 saniye bekleniyor...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    retryCount++;
+                    continue;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`API Hatası: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                return data.symbols
+                    .filter(s => s.symbol.endsWith('USDT') && s.status === 'TRADING')
+                    .map(s => ({
+                        symbol: s.symbol,
+                        baseAsset: s.baseAsset,
+                        quoteAsset: s.quoteAsset,
+                        market: 'Futures'
+                    }))
+                    .sort((a, b) => {
+                        // Popüler coinleri öne çıkar
+                        const popular = ['BTC', 'ETH', 'BNB', 'ADA', 'XRP', 'SOL', 'DOT', 'AVAX', 'MATIC', 'LINK'];
+                        const aIndex = popular.indexOf(a.baseAsset);
+                        const bIndex = popular.indexOf(b.baseAsset);
+                        
+                        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                        if (aIndex !== -1) return -1;
+                        if (bIndex !== -1) return 1;
+                        return a.symbol.localeCompare(b.symbol);
+                    });
+            } catch (fetchError) {
+                retryCount++;
+                if (retryCount >= 3) throw fetchError;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
             
     } catch (error) {
         console.error('❌ Sembol çekme hatası:', error);
@@ -147,38 +178,34 @@ async function fetchAllFuturesSymbols() {
 }
 
 async function fetchData() {
-    if (isUpdating) return;
+    if (isUpdating) {
+        console.log('⚠️ Zaten güncelleme yapılıyor, atlanıyor...');
+        return;
+    }
     
     isUpdating = true;
     updateStatus('GitHub Pages veriler güncelleniyor...');
-    showLoader(true);
     
     try {
         console.log('🔄 Veri güncelleme başlatıldı...');
-        const batchSize = 5; // Paralel istek sayısını sınırla
-        const batches = [];
         
-        for (let i = 0; i < cryptoData.length; i += batchSize) {
-            batches.push(cryptoData.slice(i, i + batchSize));
-        }
-        
+        // Sıralı olarak işle (paralel değil)
         let processed = 0;
-        for (const batch of batches) {
-            const promises = batch.map(crypto => fetchCryptoData(crypto.symbol));
-            const results = await Promise.allSettled(promises);
-            
-            results.forEach((result, index) => {
-                if (result.status === 'fulfilled' && result.value) {
-                    const crypto = batch[index];
-                    Object.assign(crypto, result.value);
+        for (const crypto of cryptoData) {
+            try {
+                const result = await fetchCryptoData(crypto.symbol);
+                if (result) {
+                    Object.assign(crypto, result);
+                    processed++;
+                    updateStatus(`GitHub Pages: ${processed}/${cryptoData.length} sembol işlendi...`);
                 }
-                processed++;
-            });
-            
-            updateStatus(`GitHub Pages: ${processed}/${cryptoData.length} sembol işlendi...`);
-            
-            // Her batch sonrası kısa bekleme (rate limiting için)
-            await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Her istek arasında bekleme (rate limiting için)
+                await new Promise(resolve => setTimeout(resolve, 150));
+                
+            } catch (cryptoError) {
+                console.warn(`⚠️ ${crypto.symbol} atlandı:`, cryptoError.message);
+            }
         }
         
         console.log('✅ Tüm veriler güncellendi');
@@ -197,12 +224,11 @@ async function fetchData() {
         showError(`Hata: ${error.message}`);
     } finally {
         isUpdating = false;
-        showLoader(false);
         
         // Otomatik yenileme zamanlayıcısı
         clearTimeout(updateTimer);
         if (isAutoRefresh) {
-            updateTimer = setTimeout(fetchData, 45000); // 45 saniye
+            updateTimer = setTimeout(fetchData, 60000); // 60 saniye
         }
     }
 }
@@ -212,59 +238,78 @@ async function fetchCryptoData(symbol) {
         const candleLimit = getRequiredCandles();
         const url = `${binanceFuturesApiUrl}?symbol=${symbol}&interval=${currentTimeframe}&limit=${candleLimit}`;
         
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`${symbol}: ${response.status}`);
-        
-        const data = await response.json();
-        if (!data || data.length === 0) return null;
-        
-        // Verileri parse et
-        const timestamps = data.map(candle => new Date(candle[0]));
-        const opens = data.map(candle => parseFloat(candle[1]));
-        const highs = data.map(candle => parseFloat(candle[2]));
-        const lows = data.map(candle => parseFloat(candle[3]));
-        const closes = data.map(candle => parseFloat(candle[4]));
-        const volumes = data.map(candle => parseFloat(candle[5]));
-        
-        const lastPrice = closes[closes.length - 1];
-        const lastUpdate = timestamps[timestamps.length - 1];
-        
-        // Volume Profile hesapla
-        const vpResults = calculateVolumeProfile(opens, highs, lows, closes, volumes);
-        
-        // Sinyalleri tespit et
-        const signals = detectSignals(timestamps, highs, lows, vpResults.buyPct, vpResults.sellPct);
-        
-        // Son güçlü sinyali bul
-        let lastStrongSignal = null;
-        let lastSignalStrength = null;
-        let lastSignalBarsAgo = null;
-        
-        const allStrongSignals = [
-            ...signals.strongBuySignals.map(s => ({ ...s, type: 'Güçlü Alım' })),
-            ...signals.strongSellSignals.map(s => ({ ...s, type: 'Güçlü Satım' }))
-        ].sort((a, b) => b.time - a.time);
-        
-        if (allStrongSignals.length > 0) {
-            const latestSignal = allStrongSignals[0];
-            lastStrongSignal = latestSignal.type;
-            lastSignalStrength = latestSignal.guc;
-            
-            const signalIndex = timestamps.findIndex(t => t.getTime() === latestSignal.time.getTime());
-            lastSignalBarsAgo = signalIndex !== -1 ? timestamps.length - 1 - signalIndex : null;
+        // Rate limiting için retry
+        let retryCount = 0;
+        while (retryCount < 2) {
+            try {
+                const response = await fetch(url);
+                
+                if (response.status === 429) {
+                    console.warn(`Rate limit ${symbol}, bekleniyor...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    retryCount++;
+                    continue;
+                }
+                
+                if (!response.ok) throw new Error(`${symbol}: ${response.status}`);
+                
+                const data = await response.json();
+                if (!data || data.length === 0) return null;
+                
+                // Verileri parse et
+                const timestamps = data.map(candle => new Date(candle[0]));
+                const opens = data.map(candle => parseFloat(candle[1]));
+                const highs = data.map(candle => parseFloat(candle[2]));
+                const lows = data.map(candle => parseFloat(candle[3]));
+                const closes = data.map(candle => parseFloat(candle[4]));
+                const volumes = data.map(candle => parseFloat(candle[5]));
+                
+                const lastPrice = closes[closes.length - 1];
+                const lastUpdate = timestamps[timestamps.length - 1];
+                
+                // Volume Profile hesapla
+                const vpResults = calculateVolumeProfile(opens, highs, lows, closes, volumes);
+                
+                // Sinyalleri tespit et
+                const signals = detectSignals(timestamps, highs, lows, vpResults.buyPct, vpResults.sellPct);
+                
+                // Son güçlü sinyali bul
+                let lastStrongSignal = null;
+                let lastSignalStrength = null;
+                let lastSignalBarsAgo = null;
+                
+                const allStrongSignals = [
+                    ...signals.strongBuySignals.map(s => ({ ...s, type: 'Güçlü Alım' })),
+                    ...signals.strongSellSignals.map(s => ({ ...s, type: 'Güçlü Satım' }))
+                ].sort((a, b) => b.time - a.time);
+                
+                if (allStrongSignals.length > 0) {
+                    const latestSignal = allStrongSignals[0];
+                    lastStrongSignal = latestSignal.type;
+                    lastSignalStrength = latestSignal.guc;
+                    
+                    const signalIndex = timestamps.findIndex(t => t.getTime() === latestSignal.time.getTime());
+                    lastSignalBarsAgo = signalIndex !== -1 ? timestamps.length - 1 - signalIndex : null;
+                }
+                
+                return {
+                    lastPrice,
+                    positivePct: vpResults.positivePct[vpResults.positivePct.length - 1],
+                    negativePct: vpResults.negativePct[vpResults.negativePct.length - 1],
+                    buyPct: vpResults.buyPct[vpResults.buyPct.length - 1],
+                    sellPct: vpResults.sellPct[vpResults.sellPct.length - 1],
+                    lastUpdate: lastUpdate.toLocaleTimeString(),
+                    lastStrongSignal,
+                    lastSignalStrength,
+                    lastSignalBarsAgo
+                };
+                
+            } catch (fetchError) {
+                retryCount++;
+                if (retryCount >= 2) throw fetchError;
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
         }
-        
-        return {
-            lastPrice,
-            positivePct: vpResults.positivePct[vpResults.positivePct.length - 1],
-            negativePct: vpResults.negativePct[vpResults.negativePct.length - 1],
-            buyPct: vpResults.buyPct[vpResults.buyPct.length - 1],
-            sellPct: vpResults.sellPct[vpResults.sellPct.length - 1],
-            lastUpdate: lastUpdate.toLocaleTimeString(),
-            lastStrongSignal,
-            lastSignalStrength,
-            lastSignalBarsAgo
-        };
         
     } catch (error) {
         console.warn(`⚠️ ${symbol} veri hatası:`, error.message);
@@ -272,6 +317,7 @@ async function fetchCryptoData(symbol) {
     }
 }
 
+// Volume Profile hesaplama fonksiyonu
 function calculateVolumeProfile(opens, highs, lows, closes, volumes) {
     let cumulativePositive = 0;
     let cumulativeNegative = 0;
@@ -356,6 +402,7 @@ function calculateVolumeProfile(opens, highs, lows, closes, volumes) {
     return { positivePct, negativePct, buyPct, sellPct };
 }
 
+// Sinyal tespit fonksiyonu
 function detectSignals(timestamps, highs, lows, buyPct, sellPct) {
     const buySignals = [];
     const sellSignals = [];
@@ -388,6 +435,7 @@ function detectSignals(timestamps, highs, lows, buyPct, sellPct) {
     return { buySignals, sellSignals, strongBuySignals, strongSellSignals };
 }
 
+// Tablo render fonksiyonu
 function renderTable() {
     cryptoTableBody.innerHTML = '';
     
@@ -455,6 +503,7 @@ function renderTable() {
     });
 }
 
+// Grafik göster fonksiyonu
 async function showCryptoChart(symbol) {
     chartTitle.textContent = `${symbol} - GitHub Pages %VP (${currentTimeRange} Gün, ${currentTimeframe})`;
     chartContainer.style.display = 'block';
@@ -493,6 +542,7 @@ async function showCryptoChart(symbol) {
     }
 }
 
+// Grafik oluştur fonksiyonu
 function createChart(timestamps, opens, highs, lows, closes, positivePct, negativePct, buyPct, sellPct, symbol) {
     // Plotly grafiklerini temizle
     Plotly.purge('chartUpper');
@@ -509,8 +559,8 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         close: closes,
         type: 'candlestick',
         name: 'Fiyat',
-        increasing: { line: { color: '#3fb950' } },
-        decreasing: { line: { color: '#f85149' } }
+        increasing: { line: { color: '#26a69a' } },
+        decreasing: { line: { color: '#ef5350' } }
     };
     
     const strongBuyTrace = {
@@ -521,7 +571,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         marker: {
             symbol: 'circle',
             size: signals.strongBuySignals.map(s => 12 + s.guc * 2),
-            color: '#3fb950'
+            color: '#00e676'
         }
     };
     
@@ -533,7 +583,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         marker: {
             symbol: 'circle',
             size: signals.strongSellSignals.map(s => 12 + s.guc * 2),
-            color: '#f85149'
+            color: '#ff1744'
         }
     };
     
@@ -541,14 +591,14 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         .filter(trace => trace.x && trace.x.length > 0);
     
     const upperLayout = {
-        xaxis: { title: 'Zaman', type: 'date', gridcolor: '#30363d' },
-        yaxis: { title: 'Fiyat', gridcolor: '#30363d' },
+        xaxis: { title: 'Zaman', type: 'date', gridcolor: '#333' },
+        yaxis: { title: 'Fiyat', gridcolor: '#333' },
         showlegend: true,
         legend: { x: 0, y: 1.1, orientation: 'h' },
         margin: { t: 50, b: 50 },
-        plot_bgcolor: '#21262d',
-        paper_bgcolor: '#21262d',
-        font: { color: '#f0f6fc' }
+        plot_bgcolor: '#1d2126',
+        paper_bgcolor: '#1d2126',
+        font: { color: '#e0e0e0' }
     };
     
     // Alt grafik: Volume Profile
@@ -558,7 +608,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         type: 'scatter',
         mode: 'lines',
         name: 'Pozitif %',
-        line: { color: '#58a6ff', width: 2 }
+        line: { color: '#2962ff', width: 2 }
     };
     
     const negativeTrace = {
@@ -567,7 +617,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         type: 'scatter',
         mode: 'lines',
         name: 'Negatif %',
-        line: { color: '#bc8cff', width: 2 }
+        line: { color: '#9c27b0', width: 2 }
     };
     
     const buyTrace = {
@@ -576,7 +626,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         type: 'scatter',
         mode: 'lines',
         name: 'Alım %',
-        line: { color: '#3fb950', width: 2 }
+        line: { color: '#26a69a', width: 2 }
     };
     
     const sellTrace = {
@@ -585,20 +635,20 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
         type: 'scatter',
         mode: 'lines',
         name: 'Satım %',
-        line: { color: '#f85149', width: 2 }
+        line: { color: '#ef5350', width: 2 }
     };
     
     const lowerData = [positiveTrace, negativeTrace, buyTrace, sellTrace];
     
     const lowerLayout = {
-        xaxis: { title: 'Zaman', type: 'date', gridcolor: '#30363d' },
-        yaxis: { title: '% Değer', range: [0, 100], gridcolor: '#30363d' },
+        xaxis: { title: 'Zaman', type: 'date', gridcolor: '#333' },
+        yaxis: { title: '% Değer', range: [0, 100], gridcolor: '#333' },
         showlegend: true,
         legend: { x: 0, y: 1.1, orientation: 'h' },
         margin: { t: 50, b: 50 },
-        plot_bgcolor: '#21262d',
-        paper_bgcolor: '#21262d',
-        font: { color: '#f0f6fc' }
+        plot_bgcolor: '#1d2126',
+        paper_bgcolor: '#1d2126',
+        font: { color: '#e0e0e0' }
     };
     
     // Grafikleri çiz
@@ -606,6 +656,7 @@ function createChart(timestamps, opens, highs, lows, closes, positivePct, negati
     Plotly.newPlot('chartLower', lowerData, lowerLayout);
 }
 
+// Otomatik refresh toggle
 function toggleAutoRefresh() {
     const btn = document.getElementById('autoRefresh');
     
@@ -613,17 +664,20 @@ function toggleAutoRefresh() {
         clearInterval(autoRefreshInterval);
         isAutoRefresh = false;
         btn.textContent = '⚡ Otomatik';
-        btn.style.background = 'linear-gradient(135deg, #238636 0%, #2ea043 100%)';
+        btn.style.background = '#2962ff';
         updateStatus('GitHub Pages manuel mod');
     } else {
-        autoRefreshInterval = setInterval(fetchData, 45000); // 45 saniye
+        autoRefreshInterval = setInterval(() => {
+            if (!isUpdating) fetchData();
+        }, 60000); // 60 saniye
         isAutoRefresh = true;
         btn.textContent = '⏹️ Durdur';
-        btn.style.background = 'linear-gradient(135deg, #da3633 0%, #f85149 100%)';
-        updateStatus('GitHub Pages otomatik mod (45s)');
+        btn.style.background = '#ef5350';
+        updateStatus('GitHub Pages otomatik mod (60s)');
     }
 }
 
+// Yardımcı fonksiyonlar
 function updateSortIndicators() {
     document.querySelectorAll('th.sortable').forEach(th => {
         th.classList.remove('asc', 'desc');
@@ -639,7 +693,7 @@ function getRequiredCandles() {
         '1m': 1440, '5m': 288, '15m': 96, '30m': 48,
         '1h': 24, '4h': 6, '1d': 1
     };
-    return Math.min(1000, (candlesPerDay[currentTimeframe] || 24) * days);
+    return Math.min(500, (candlesPerDay[currentTimeframe] || 24) * days);
 }
 
 function formatPrice(price) {
@@ -655,12 +709,14 @@ function updateStatus(message) {
     statusElement.textContent = message;
 }
 
-function showLoader(show) {
-    statusLoader.style.display = show ? 'inline-block' : 'none';
-}
-
 function showError(message) {
     console.error('❌', message);
+    const errorElement = document.getElementById('errorMessage');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+        setTimeout(() => { errorElement.style.display = 'none'; }, 5000);
+    }
 }
 
-console.log('🚀 GitHub Pages TradingView Dashboard tam kod yüklendi');
+console.log('🚀 GitHub Pages TradingView Dashboard optimize kod yüklendi');
